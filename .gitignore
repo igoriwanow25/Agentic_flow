@@ -1,0 +1,28 @@
+# Local credentials and secrets
+.env
+.env.*
+*.env
+
+# Ralph Loop State
+.ralph-state/
+
+# IDE files
+.vscode/
+.idea/
+
+# Large binaries and logs
+ngrok.exe
+ngrok.zip
+*.log
+*.sqlite
+*.sql
+
+# Build and Node modules
+node_modules/
+dist/
+build/
+.pnpm-store/
+
+# OS generated files
+.DS_Store
+Thumbs.db
