@@ -286,6 +286,7 @@ ngrok http 5678
 ### Week 2 — Notion + RAG
 - [ ] Notion Integration Token + n8n credential
 - [ ] Import Notion Knowledge Base AI Assistant template
+- [ ] Add tool to create new pages in Notion
 - [ ] Build Notion → Qdrant indexing workflow
 - [ ] Add Qdrant Search as tool to Main Assistant
 

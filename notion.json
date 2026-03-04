@@ -1,0 +1,136 @@
+{
+  "name": "Tool: Notion Actions",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "enum": ["create_page", "get_page", "update_page", "edit_content", "get_pages"],
+              "description": "Action: create_page, get_page, update_page, edit_content, get_pages"
+            },
+            "databaseId": { "type": "string", "description": "Notion database ID (for create_page, get_pages)" },
+            "pageId": { "type": "string", "description": "Notion page ID (for get_page, update_page, edit_content)" },
+            "title": { "type": "string", "description": "Page title (for create_page, update_page)" },
+            "content": { "type": "string", "description": "Page body content (for create_page, edit_content)" }
+          },
+          "required": ["action"]
+        }
+      },
+      "id": "4d2cb377-bf91-4cae-850b-bdedbfeaa774",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-512, 288]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            { "conditions": { "options": {}, "conditions": [{ "leftValue": "={{ $json.action }}", "rightValue": "create_page", "operator": { "type": "string", "operation": "equals" } }] }, "renameOutput": true, "outputKey": "create_page" },
+            { "conditions": { "options": {}, "conditions": [{ "leftValue": "={{ $json.action }}", "rightValue": "get_page", "operator": { "type": "string", "operation": "equals" } }] }, "renameOutput": true, "outputKey": "get_page" },
+            { "conditions": { "options": {}, "conditions": [{ "leftValue": "={{ $json.action }}", "rightValue": "update_page", "operator": { "type": "string", "operation": "equals" } }] }, "renameOutput": true, "outputKey": "update_page" },
+            { "conditions": { "options": {}, "conditions": [{ "leftValue": "={{ $json.action }}", "rightValue": "edit_content", "operator": { "type": "string", "operation": "equals" } }] }, "renameOutput": true, "outputKey": "edit_content" },
+            { "conditions": { "options": {}, "conditions": [{ "leftValue": "={{ $json.action }}", "rightValue": "get_pages", "operator": { "type": "string", "operation": "equals" } }] }, "renameOutput": true, "outputKey": "get_pages" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eb01ce08-6147-4eb1-a4f4-d67d36af234f",
+      "name": "Switch Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [-272, 288]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "create",
+        "databaseId": { "__rl": true, "mode": "id", "value": "={{ $json.databaseId }}" },
+        "title": "={{ $json.title }}",
+        "blockUi": { "blockValues": [{ "type": "paragraph", "textContent": "={{ $json.content }}" }] }
+      },
+      "id": "wf-create",
+      "name": "Create Page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [-16, -16],
+      "credentials": { "notionApi": { "id": "bQduVqabxgCABgia", "name": "Notion account" } }
+    },
+    {
+      "parameters": {
+        "resource": "page",
+        "operation": "get",
+        "pageId": { "__rl": true, "mode": "id", "value": "={{ $json.pageId }}" }
+      },
+      "id": "dfd84c92-bf5b-4180-97fc-73885148247b",
+      "name": "Get Page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [-16, 144],
+      "credentials": { "notionApi": { "id": "bQduVqabxgCABgia", "name": "Notion account" } }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": { "__rl": true, "mode": "id", "value": "={{ $json.pageId }}" },
+        "options": {}
+      },
+      "id": "ba8fe5be-0b2d-4c70-ac81-bbc2e18eda4d",
+      "name": "Update Page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [-16, 288],
+      "credentials": { "notionApi": { "id": "bQduVqabxgCABgia", "name": "Notion account" } }
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "operation": "append",
+        "blockId": { "__rl": true, "mode": "id", "value": "={{ $json.pageId }}" },
+        "blockUi": { "blockValues": [{ "type": "paragraph", "textContent": "={{ $json.content }}" }] }
+      },
+      "id": "7dfb01c2-095b-49ec-8c5d-c58c4903a1c1",
+      "name": "Edit Content",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [-16, 432],
+      "credentials": { "notionApi": { "id": "bQduVqabxgCABgia", "name": "Notion account" } }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": { "__rl": true, "mode": "id", "value": "={{ $json.databaseId }}" },
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "a436f5a7-999e-48d0-b842-550e92dd889f",
+      "name": "Get Pages",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [-16, 576],
+      "credentials": { "notionApi": { "id": "bQduVqabxgCABgia", "name": "Notion account" } }
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [[{ "node": "Switch Action", "type": "main", "index": 0 }]]
+    },
+    "Switch Action": {
+      "main": [
+        [{ "node": "Create Page",  "type": "main", "index": 0 }],
+        [{ "node": "Get Page",     "type": "main", "index": 0 }],
+        [{ "node": "Update Page",  "type": "main", "index": 0 }],
+        [{ "node": "Edit Content", "type": "main", "index": 0 }],
+        [{ "node": "Get Pages",    "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "instanceId": "7a51d064a1a216a692f753fcdab276e4ff201a01d8b66f56d50d4d719fd0dc87" }
+}
