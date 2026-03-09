@@ -1,0 +1,2 @@
+FROM mem0ai/mem0-server:latest
+RUN pip install psycopg psycopg2-binary langchain-neo4j neo4j
