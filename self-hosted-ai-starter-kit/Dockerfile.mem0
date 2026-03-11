@@ -1,2 +1,2 @@
-FROM mem0ai/mem0-server:latest
-RUN pip install psycopg psycopg2-binary langchain-neo4j neo4j
+FROM mem0/mem0-api-server:latest
+RUN pip install psycopg psycopg2-binary langchain-neo4j neo4j rank-bm25
