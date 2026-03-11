@@ -185,6 +185,7 @@ services:
 
   neo4j:
     image: neo4j:5
+    hostname: neo4j
     networks: ['demo']
     environment:
       - NEO4J_AUTH=neo4j/mem0graph
