@@ -4,13 +4,19 @@
       "parameters": {
         "model": "nomic-embed-text:latest"
       },
-      "id": "d3cff1d2-b3b9-4a98-8a64-b0c4565ed789",
+      "id": "6f6a7209-f4b9-4800-8a6b-77690eb2543a",
       "name": "Embeddings Ollama",
       "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
       "typeVersion": 1,
-      "position": [5856, 1360],
+      "position": [
+        -704,
+        552
+      ],
       "credentials": {
-        "ollamaApi": { "id": "xHuYe0MDGOs9IpBW", "name": "Local Ollama service" }
+        "ollamaApi": {
+          "id": "rl2XCpLmRzvt09j0",
+          "name": "Ollama account"
+        }
       }
     },
     {
@@ -18,18 +24,22 @@
         "mode": "retrieve-as-tool",
         "toolDescription": "Search Igor's Notion knowledge base. Use this to find existing notes, projects, tasks and decisions.",
         "qdrantCollection": {
-          "__rl": true, "value": "notion-kb", "mode": "list", "cachedResultName": "notion-kb"
+          "__rl": true,
+          "value": "notion-kb",
+          "mode": "list",
+          "cachedResultName": "notion-kb"
         },
         "options": {}
       },
-      "id": "897db91a-44c0-4b7a-a6a7-b70215746407",
+      "id": "aab30fde-17da-440f-a0e6-dc5083cb5165",
       "name": "Search Notion KB",
       "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
       "typeVersion": 1.3,
-      "position": [5776, 1152],
-      "credentials": {
-        "qdrantApi": { "id": "sFfERYppMeBnFNeA", "name": "Local QdrantApi database" }
-      }
+      "position": [
+        -784,
+        344
+      ],
+      "credentials": {}
     },
     {
       "parameters": {
@@ -37,39 +47,56 @@
         "sessionKey": "={{ 'telegram_' + $('Telegram Trigger').item.json.message.from.id }}",
         "contextWindowLength": 10
       },
-      "id": "5ad295b3-1df3-4b18-88db-f1c9398a086a",
+      "id": "3651ba40-0bd8-4ec3-b93b-f8001c7843f4",
       "name": "Window Buffer Memory1",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.2,
-      "position": [5648, 1152]
+      "position": [
+        -912,
+        344
+      ]
     },
     {
       "parameters": {
-        "model": "openai/gpt-4o-mini",
+        "model": "=openai/gpt-4o-mini",
         "options": {}
       },
-      "id": "ed984359-1641-4911-8eb5-3cb957f6b70c",
+      "id": "0cd86496-df7b-41f8-a2f8-25ed73133138",
       "name": "OpenRouter Chat Model1",
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
-      "position": [5520, 1152],
+      "position": [
+        -1040,
+        344
+      ],
       "credentials": {
-        "openRouterApi": { "id": "P1UYbeTw7fyEoQnz", "name": "OpenRouter account" }
+        "openRouterApi": {
+          "id": "ZO9htD256zTm5lJG",
+          "name": "OpenRouter account 2"
+        }
       }
     },
     {
       "parameters": {
-        "updates": ["message"],
+        "updates": [
+          "message"
+        ],
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
-      "position": [5072, 928],
-      "id": "b241660b-67af-499b-a4bb-dd04c7fc22a2",
+      "position": [
+        -1488,
+        120
+      ],
+      "id": "82be3c96-13e2-4974-9e88-55bcbef4bc1c",
       "name": "Telegram Trigger",
       "webhookId": "d3925728-351b-47da-93de-44d6e48eb48b",
       "credentials": {
-        "telegramApi": { "id": "4KpLoEkxKQWIXlda", "name": "Telegram account 2" }
+        "telegramApi": {
+          "id": "ghXOFtsCTjimcO4q",
+          "name": "Telegram account"
+        }
       }
     },
     {
@@ -78,46 +105,63 @@
       },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [5296, 928],
-      "id": "38a273e0-2168-4fa4-b5fb-72ef1f441765",
+      "position": [
+        -1264,
+        120
+      ],
+      "id": "a7732a72-33e5-4f86-b1ae-4f60028bbdd3",
       "name": "Wait",
       "webhookId": "1da18651-52ab-473b-9fde-c67f37d67b2d"
     },
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
           "conditions": [
             {
               "id": "check-output-empty",
               "leftValue": "={{ $json.output }}",
               "rightValue": "",
-              "operator": { "type": "string", "operation": "notEmpty" }
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
             }
           ],
           "combinator": "and"
         },
         "options": {}
       },
-      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "id": "28df4b46-6a28-47f6-816e-14b275e1501e",
       "name": "Output OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [6320, 928]
+      "position": [
+        352,
+        48
+      ]
     },
     {
       "parameters": {
         "promptType": "define",
         "text": "={{ $json.message.text }}",
         "options": {
-          "systemMessage": "You are Igor's personal assistant. You know his projects, preferences and decision history.\nYou manage tasks and delegate to other agents when needed.\nYou have access to the Notion knowledge base. You remember all previous conversations.\nBe specific, actionable and concise.\n\nCRITICAL RULES — ALWAYS FOLLOW:\n- When user asks you to DO something — call the appropriate tool IMMEDIATELY. Do NOT respond with text first.\n- NEVER ask for confirmation before executing a tool call.\n- NEVER ask \"czy mam dodać\" / \"czy jesteś pewien\" — just do it.\n- If content or title is mentioned in the message — use it directly.\n- Default Notion databaseId: 2f4d05428c728089a95addea3be0bc0f\n- To add content to a page: first call Create, then use the returned page ID to call Append.\n- If pageId is needed but not provided — first call Get many pages to find it.\n"
+          "systemMessage": "You are Igor's personal assistant. You know his projects, preferences and decision history.\nYou manage tasks and delegate to other agents when needed.\nYou have access to the Notion knowledge base. You remember all previous conversations.\nBe specific, actionable and concise.\n\nCRITICAL RULES — ALWAYS FOLLOW:\n- When user asks you to DO something — call the appropriate tool IMMEDIATELY. Do NOT respond with text first.\n- NEVER ask for confirmation before executing a tool call.\n- NEVER ask \"czy mam dodać\" / \"czy jesteś pewien\" — just do it.\n- If content or title is mentioned in the message — use it directly.\n- Default Notion databaseId: 2f4d05428c728089a95addea3be0bc0f\n- To add content to a page: first call Create, then use the returned page ID to call Append.\n- If pageId is needed but not provided — first call Get many pages to find it.\n\nYou have access to long-term memory tools:\n- ALWAYS call search_memories at the start of EVERY conversation with the user's message as query.\n- Call save_memory after any important decision, preference, or fact is established.\n- Use memories as context when formulating your response.\n"
         }
       },
-      "id": "8e7d008c-24f7-4467-8c31-fa889b701e18",
+      "id": "633c4beb-0d06-4274-9e3c-074694412ee3",
       "name": "AI Agent1",
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
-      "position": [6000, 928],
+      "position": [
+        -440,
+        120
+      ],
       "onError": "continueErrorOutput"
     },
     {
@@ -126,14 +170,20 @@
         "text": "={{ $json.output }}",
         "additionalFields": {}
       },
-      "id": "c5cb4657-a451-4122-afd4-ad733723521b",
+      "id": "b410bd0b-e142-4dcb-93ad-03e25bfa2384",
       "name": "Telegram — sukces",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
-      "position": [6560, 800],
+      "position": [
+        576,
+        0
+      ],
       "webhookId": "3a346bfc-e982-4bdf-9132-59b79240c9d2",
       "credentials": {
-        "telegramApi": { "id": "4KpLoEkxKQWIXlda", "name": "Telegram account 2" }
+        "telegramApi": {
+          "id": "ghXOFtsCTjimcO4q",
+          "name": "Telegram account"
+        }
       }
     },
     {
@@ -142,36 +192,20 @@
         "text": "❌ Coś poszło nie tak. Spróbuj ponownie lub przepisz wiadomość inaczej.",
         "additionalFields": {}
       },
-      "id": "f1e2d3c4-b5a6-7890-fedc-ba0987654321",
+      "id": "48fd0810-841e-4c9b-8cbe-8d91a41f9840",
       "name": "Telegram — błąd",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.1,
-      "position": [6560, 1056],
+      "position": [
+        576,
+        216
+      ],
+      "webhookId": "433bc74b-9ba2-46c8-86eb-92aa7dd1f589",
       "credentials": {
-        "telegramApi": { "id": "4KpLoEkxKQWIXlda", "name": "Telegram account 2" }
-      }
-    },
-    {
-      "parameters": {
-        "resource": "databasePage",
-        "databaseId": {
-          "__rl": true,
-          "value": "2f4d0542-8c72-8089-a95a-ddea3be0bc0f",
-          "mode": "list",
-          "cachedResultName": "n8n database",
-          "cachedResultUrl": "https://www.notion.so/2f4d05428c728089a95addea3be0bc0f"
-        },
-        "title": "={{ $fromAI('title', 'Page title to create', 'string') }}",
-        "simple": false,
-        "options": {}
-      },
-      "type": "n8n-nodes-base.notionTool",
-      "typeVersion": 2.2,
-      "position": [6064, 1152],
-      "id": "97c94350-1045-415f-8cc3-6037affb872e",
-      "name": "Create a database page in Notion",
-      "credentials": {
-        "notionApi": { "id": "bQduVqabxgCABgia", "name": "Notion account" }
+        "telegramApi": {
+          "id": "ghXOFtsCTjimcO4q",
+          "name": "Telegram account"
+        }
       }
     },
     {
@@ -190,12 +224,13 @@
       },
       "type": "n8n-nodes-base.notionTool",
       "typeVersion": 2.2,
-      "position": [6192, 1152],
-      "id": "80ebcd39-14e9-4b8a-971c-0dadb9277e32",
+      "position": [
+        -496,
+        344
+      ],
+      "id": "5250c5f4-c84c-4c9c-b0e7-3537e6ad09fb",
       "name": "Get many database pages in Notion",
-      "credentials": {
-        "notionApi": { "id": "bQduVqabxgCABgia", "name": "Notion account" }
-      }
+      "credentials": {}
     },
     {
       "parameters": {
@@ -215,12 +250,13 @@
       },
       "type": "n8n-nodes-base.notionTool",
       "typeVersion": 2.2,
-      "position": [6320, 1152],
-      "id": "566d4b59-98aa-4639-9642-6d890b058f3f",
+      "position": [
+        -368,
+        344
+      ],
+      "id": "4c7f722e-926b-43e3-97d2-ccf1cfb391ef",
       "name": "Append a block in Notion",
-      "credentials": {
-        "notionApi": { "id": "bQduVqabxgCABgia", "name": "Notion account" }
-      }
+      "credentials": {}
     },
     {
       "parameters": {
@@ -244,61 +280,250 @@
       },
       "type": "n8n-nodes-base.notionTool",
       "typeVersion": 2.2,
-      "position": [6448, 1152],
-      "id": "7d111038-e0c6-4fd6-bcb5-a0771dc3d3f0",
+      "position": [
+        -240,
+        344
+      ],
+      "id": "a5cfc174-c353-4f10-bc30-a2d5e97b8d09",
       "name": "Update a database page in Notion",
-      "credentials": {
-        "notionApi": { "id": "bQduVqabxgCABgia", "name": "Notion account" }
-      }
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "toolDescription": "Search long-term memory before answering. Call this FIRST with the user's question.",
+        "method": "POST",
+        "url": "http://host.docker.internal:8888/v1/memories/search/",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $fromAI('query', 'The search query to find relevant memories') }}\",\n  \"user_id\": \"main-assistant\",\n  \"limit\": 5\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        -112,
+        344
+      ],
+      "id": "b2152c24-4dfe-432a-a6fa-c642cf333125",
+      "name": "search_memories"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Save important decisions, preferences or facts to long-term memory.",
+        "method": "POST",
+        "url": "http://host.docker.internal:8888/v1/memories/",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    { \"role\": \"user\", \"content\": \"{{ $fromAI('userMessage', 'The user message to remember') }}\" },\n    { \"role\": \"assistant\", \"content\": \"{{ $fromAI('assistantResponse', 'The assistant response to remember') }}\" }\n  ],\n  \"user_id\": \"main-assistant\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        16,
+        344
+      ],
+      "id": "8302dde6-1750-4362-aa4d-33616112e676",
+      "name": "save_memory"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "2f4d0542-8c72-8089-a95a-ddea3be0bc0f",
+          "mode": "list",
+          "cachedResultName": "n8n database",
+          "cachedResultUrl": "https://www.notion.so/2f4d05428c728089a95addea3be0bc0f"
+        },
+        "title": "={{ $fromAI('title', 'Page title to create', 'string') }}",
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notionTool",
+      "typeVersion": 2.2,
+      "position": [
+        144,
+        344
+      ],
+      "id": "0e8b8e84-5767-499e-a921-086d73160e8c",
+      "name": "Create a database page in Notion",
+      "credentials": {}
     }
   ],
   "connections": {
     "Embeddings Ollama": {
-      "ai_embedding": [[{ "node": "Search Notion KB", "type": "ai_embedding", "index": 0 }]]
+      "ai_embedding": [
+        [
+          {
+            "node": "Search Notion KB",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Search Notion KB": {
-      "ai_tool": [[{ "node": "AI Agent1", "type": "ai_tool", "index": 0 }]]
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Window Buffer Memory1": {
-      "ai_memory": [[{ "node": "AI Agent1", "type": "ai_memory", "index": 0 }]]
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
     },
     "OpenRouter Chat Model1": {
-      "ai_languageModel": [[{ "node": "AI Agent1", "type": "ai_languageModel", "index": 0 }]]
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Telegram Trigger": {
-      "main": [[{ "node": "Wait", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Wait": {
-      "main": [[{ "node": "AI Agent1", "type": "main", "index": 0 }]]
-    },
-    "AI Agent1": {
       "main": [
-        [{ "node": "Output OK?", "type": "main", "index": 0 }],
-        [{ "node": "Telegram — błąd", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Output OK?": {
       "main": [
-        [{ "node": "Telegram — sukces", "type": "main", "index": 0 }],
-        [{ "node": "Telegram — błąd", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Telegram — sukces",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram — błąd",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Output OK?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram — błąd",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many database pages in Notion": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append a block in Notion": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a database page in Notion": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_memories": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "save_memory": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
       ]
     },
     "Create a database page in Notion": {
-      "ai_tool": [[{ "node": "AI Agent1", "type": "ai_tool", "index": 0 }]]
-    },
-    "Get many database pages in Notion": {
-      "ai_tool": [[{ "node": "AI Agent1", "type": "ai_tool", "index": 0 }]]
-    },
-    "Append a block in Notion": {
-      "ai_tool": [[{ "node": "AI Agent1", "type": "ai_tool", "index": 0 }]]
-    },
-    "Update a database page in Notion": {
-      "ai_tool": [[{ "node": "AI Agent1", "type": "ai_tool", "index": 0 }]]
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "7a51d064a1a216a692f753fcdab276e4ff201a01d8b66f56d50d4d719fd0dc87"
+    "instanceId": "844ca14175e5fcc47d0049b87a95175cd99d6a20bc273bcead5920aec85dc43a"
   }
 }

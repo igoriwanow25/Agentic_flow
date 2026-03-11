@@ -1,0 +1,195 @@
+{
+  "name": "Notion → Qdrant Indexer",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {"interval": [{"field": "cronExpression", "expression": "0 */6 * * *"}]}
+      },
+      "id": "node-schedule",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {"__rl": true, "value": "2f4d05428c728089a95addea3be0bc0f", "mode": "id"},
+        "returnAll": false,
+        "limit": 100
+      },
+      "id": "node-notion-get",
+      "name": "Notion: Get Pages",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [460, 300],
+      "credentials": {"notionApi": {"id": "notion-credential", "name": "Notion API"}}
+    },
+    {
+      "parameters": {"batchSize": 1, "options": {}},
+      "id": "node-loop",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {"amount": 400, "unit": "milliseconds"},
+      "id": "node-wait",
+      "name": "Wait 0.4s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [900, 180],
+      "webhookId": "wait-webhook-001"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.notion.com/v1/blocks/{{ $json.id }}/children",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "notionApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{"name": "Notion-Version", "value": "2022-06-28"}]
+        },
+        "options": {}
+      },
+      "id": "node-http-notion",
+      "name": "HTTP Request: Notion Blocks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 180],
+      "credentials": {"notionApi": {"id": "notion-credential", "name": "Notion API"}}
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const loopNode = $('Loop Over Items').all();\nconst currentItem = loopNode[loopNode.length - 1];\nconst pageId = currentItem.json.id;\n\nconst props = currentItem.json.properties || {};\nlet pageTitle = null;\nfor (const key of Object.keys(props)) {\n  const prop = props[key];\n  if (prop.type === 'title' && prop.title && prop.title.length > 0) {\n    pageTitle = prop.title.map(t => t.plain_text).join('').trim();\n    break;\n  }\n}\n\n// Brak tytułu = pusty rekord bazy, pomiń ale zwróć skip żeby pętla działała\nif (!pageTitle) return [{ json: { skip: true, pageId, reason: 'no title' } }];\n\nfunction simpleHash(str) {\n  let hash = 0;\n  for (let i = 0; i < str.length; i++) {\n    hash = ((hash << 5) - hash) + str.charCodeAt(i);\n    hash |= 0;\n  }\n  return Math.abs(hash);\n}\n\nconst pageUrl = currentItem.json.url || '';\nconst rawInput = $input.item.json;\nconst blocks = Array.isArray(rawInput.results) ? rawInput.results : [];\n\n// Brak bloków = pusta strona, pomiń ale zwróć skip\nif (blocks.length === 0) return [{ json: { skip: true, pageId, reason: 'no blocks' } }];\n\nlet fullText = `# ${pageTitle}\\n\\n`;\n\nfor (const block of blocks) {\n  const type = block.type;\n  const content = block[type];\n\n  if (content && content.rich_text && content.rich_text.length > 0) {\n    const text = content.rich_text.map(t => t.plain_text).join('');\n    if (text.trim()) {\n      if (type === 'heading_1') fullText += `## ${text}\\n`;\n      else if (type === 'heading_2') fullText += `### ${text}\\n`;\n      else if (type === 'heading_3') fullText += `#### ${text}\\n`;\n      else fullText += text + '\\n';\n    }\n  }\n\n  if (type === 'table_row' && content && content.cells) {\n    const rowText = content.cells\n      .map(cell => cell.map(t => t.plain_text).join('').trim())\n      .filter(c => c.length > 0)\n      .join(' | ');\n    if (rowText.trim()) fullText += rowText + '\\n';\n  }\n\n  if (type === 'code' && content && content.rich_text) {\n    const text = content.rich_text.map(t => t.plain_text).join('');\n    if (text.trim()) fullText += `[kod] ${text}\\n`;\n  }\n}\n\nconst textBody = fullText.trim();\nif (textBody === `# ${pageTitle}`) return [{ json: { skip: true, pageId, reason: 'empty content' } }];\n\nconst chunkSize = 500;\nconst overlap = 50;\nconst chunks = [];\nlet start = 0;\nwhile (start < textBody.length) {\n  chunks.push(textBody.slice(start, start + chunkSize));\n  start += chunkSize - overlap;\n  if (start >= textBody.length) break;\n}\n\nreturn chunks.map((chunk, idx) => ({\n  json: {\n    skip: false,\n    pageId,\n    pageTitle,\n    pageUrl,\n    text: chunk,\n    chunkIndex: idx,\n    source: 'notion',\n    indexedAt: new Date().toISOString(),\n    pointId: simpleHash(`${pageId}_${idx}`)\n  }\n}));"
+      },
+      "id": "node-code",
+      "name": "Extract & Chunk Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 180]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict"},
+          "conditions": [
+            {
+              "id": "cond-skip",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": false,
+              "operator": {"type": "boolean", "operation": "equals"}
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-if-skip",
+      "name": "Skip?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1560, 180]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11434/api/embeddings",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={\n  \"model\": \"nomic-embed-text:latest\",\n  \"prompt\": \"{{ $json.text }}\"\n}",
+        "options": {}
+      },
+      "id": "node-http-embeddings",
+      "name": "HTTP Request: Ollama Embeddings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 120]
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const prev = $('Extract & Chunk Text').item.json;\nconst embedding = $input.item.json.embedding;\n\nreturn [{\n  json: {\n    pointId: prev.pointId,\n    pageId: prev.pageId,\n    pageTitle: prev.pageTitle,\n    pageUrl: prev.pageUrl,\n    text: prev.text,\n    chunkIndex: prev.chunkIndex,\n    source: prev.source,\n    indexedAt: prev.indexedAt,\n    embedding\n  }\n}];"
+      },
+      "id": "node-merge",
+      "name": "Merge Embedding + Metadata",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2000, 120]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "http://host.docker.internal:6333/collections/notion-kb/points",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={\n  \"points\": [\n    {\n      \"id\": {{ $json.pointId }},\n      \"vector\": {{ JSON.stringify($json.embedding) }},\n      \"payload\": {\n        \"pageId\": \"{{ $json.pageId }}\",\n        \"pageTitle\": \"{{ $json.pageTitle }}\",\n        \"pageUrl\": \"{{ $json.pageUrl }}\",\n        \"text\": {{ JSON.stringify($json.text) }},\n        \"chunkIndex\": {{ $json.chunkIndex }},\n        \"source\": \"notion\",\n        \"indexedAt\": \"{{ $json.indexedAt }}\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "node-http-qdrant",
+      "name": "HTTP Request: Qdrant Upsert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2220, 120]
+    },
+    {
+      "parameters": {
+        "chatId": "7215813642",
+        "text": "=✅ Notion → Qdrant indexing zakończone!\nData: {{ new Date().toLocaleString('pl-PL') }}",
+        "additionalFields": {}
+      },
+      "id": "node-telegram-done",
+      "name": "Telegram: Indexing Done",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 420],
+      "credentials": {"telegramApi": {"id": "telegram-credential", "name": "Telegram Bot"}}
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [[{"node": "Notion: Get Pages", "type": "main", "index": 0}]]
+    },
+    "Notion: Get Pages": {
+      "main": [[{"node": "Loop Over Items", "type": "main", "index": 0}]]
+    },
+    "Loop Over Items": {
+      "main": [
+        [{"node": "Wait 0.4s", "type": "main", "index": 0}],
+        [{"node": "Telegram: Indexing Done", "type": "main", "index": 0}]
+      ]
+    },
+    "Wait 0.4s": {
+      "main": [[{"node": "HTTP Request: Notion Blocks", "type": "main", "index": 0}]]
+    },
+    "HTTP Request: Notion Blocks": {
+      "main": [[{"node": "Extract & Chunk Text", "type": "main", "index": 0}]]
+    },
+    "Extract & Chunk Text": {
+      "main": [[{"node": "Skip?", "type": "main", "index": 0}]]
+    },
+    "Skip?": {
+      "main": [
+        [{"node": "HTTP Request: Ollama Embeddings", "type": "main", "index": 0}],
+        [{"node": "Loop Over Items", "type": "main", "index": 0}]
+      ]
+    },
+    "HTTP Request: Ollama Embeddings": {
+      "main": [[{"node": "Merge Embedding + Metadata", "type": "main", "index": 0}]]
+    },
+    "Merge Embedding + Metadata": {
+      "main": [[{"node": "HTTP Request: Qdrant Upsert", "type": "main", "index": 0}]]
+    },
+    "HTTP Request: Qdrant Upsert": {
+      "main": [[{"node": "Loop Over Items", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  }
+}

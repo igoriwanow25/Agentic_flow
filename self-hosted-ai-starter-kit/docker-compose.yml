@@ -3,6 +3,8 @@ volumes:
   postgres_storage:
   ollama_storage:
   qdrant_storage:
+  neo4j_data:
+  mem0_storage:
 
 networks:
   demo:
@@ -50,7 +52,7 @@ x-init-ollama: &init-ollama
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     hostname: postgres
     networks: ['demo']
     restart: unless-stopped
@@ -155,14 +157,41 @@ services:
      - ollama-gpu-amd
 
   mem0:
-    image: mem0/mem0-api-server:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.mem0
+    image: mem0-selfhost:latest
+    networks: ['demo']
     ports:
-      - "8888:8888"
-    environment:
-      - OPENAI_API_KEY=${OPENROUTER_API_KEY}
-      - OPENAI_BASE_URL=https://openrouter.ai/api/v1
+      - "8888:8000"
+    volumes:
+      - mem0_storage:/app/history
+    env_file:
+      - .env
     depends_on:
       postgres:
         condition: service_healthy
-      qdrant:
-        condition: service_started
+      neo4j:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USERNAME=neo4j
+      - NEO4J_PASSWORD=mem0graph
+
+  neo4j:
+    image: neo4j:5
+    networks: ['demo']
+    environment:
+      - NEO4J_AUTH=neo4j/mem0graph
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD", "neo4j", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
